@@ -60,10 +60,10 @@ cd usertemplate
 
 ```bash
 # Start PostgreSQL with Docker
-docker-compose up postgres -d
+docker compose up postgres -d
 
 # Check if PostgreSQL is running
-docker-compose logs postgres
+docker compose logs postgres
 ```
 
 #### Option B: Local PostgreSQL
@@ -171,23 +171,23 @@ curl -X GET http://localhost:8080/api/v1/users/me \
 
 ```bash
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f app
+docker compose logs -f app
 
 # Stop all services
-docker-compose down
+docker compose down
 ```
 
 ### Production Deployment
 
 ```bash
 # Build and run in production mode
-docker-compose -f docker-compose.yml up -d --build
+docker compose -f docker compose.yml up -d --build
 
 # With custom environment
-SPRING_PROFILES_ACTIVE=prod DB_PASSWORD=your_prod_password docker-compose up -d
+SPRING_PROFILES_ACTIVE=prod DB_PASSWORD=your_prod_password docker compose up -d
 ```
 
 ## 🔧 Configuration
@@ -305,7 +305,7 @@ Add new endpoints to `SecurityConfig.java`:
    docker-compose ps postgres
 
    # View database logs
-   docker-compose logs postgres
+   docker compose logs postgres
    ```
 
 2. **JWT Token Issues**
@@ -327,21 +327,5 @@ Add new endpoints to `SecurityConfig.java`:
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)
-- **Email**: your-email@example.com
-
----
 
 **🎉 Happy Coding!** This template provides a solid foundation for building scalable Spring Boot applications with authentication.
