@@ -17,15 +17,12 @@ public class PageResponse<T> {
   private int totalPages;
   private boolean first;
   private boolean last;
-  private boolean empty;
 
   public static <T> PageResponse<T> of(List<T> content, int page, int size, long totalElements) {
     int totalPages = (int) Math.ceil((double) totalElements / size);
     boolean isFirst = page == 0;
     boolean isLast = page >= totalPages - 1;
-    boolean isEmpty = content.isEmpty();
 
-    return new PageResponse<>(
-        content, page, size, totalElements, totalPages, isFirst, isLast, isEmpty);
+    return new PageResponse<>(content, page, size, totalElements, totalPages, isFirst, isLast);
   }
 }

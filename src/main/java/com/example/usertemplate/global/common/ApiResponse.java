@@ -15,11 +15,6 @@ public class ApiResponse<T> {
   private T data;
   private LocalDateTime timestamp;
 
-  public static <T> ApiResponse<T> success(T data) {
-    return new ApiResponse<>(
-        "SUCCESS", "Operation completed successfully", data, LocalDateTime.now());
-  }
-
   public static <T> ApiResponse<T> success(String message, T data) {
     return new ApiResponse<>("SUCCESS", message, data, LocalDateTime.now());
   }

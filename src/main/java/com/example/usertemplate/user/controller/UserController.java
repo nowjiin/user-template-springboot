@@ -39,10 +39,9 @@ public class UserController {
       }
 
       UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-      String username = userDetails.getUsername();
-      log.info("Getting profile for user: {}", username);
+      Long userId = Long.valueOf(userDetails.getUsername());
 
-      UserResponse userResponse = userService.getUserByUsername(username);
+      UserResponse userResponse = userService.getUserById(userId);
       return ResponseEntity.ok(
           ApiResponse.success("User profile retrieved successfully", userResponse));
     } catch (Exception ex) {
@@ -63,10 +62,11 @@ public class UserController {
       }
 
       UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-      String username = userDetails.getUsername();
-      log.info("Updating profile for user: {}", username);
+      Long userId = Long.valueOf(userDetails.getUsername());
 
-      UserResponse userResponse = userService.updateCurrentUser(username, request);
+      log.info("Updating profile for user ID: {}", userId);
+
+      UserResponse userResponse = userService.updateCurrentUser(userId, request);
       return ResponseEntity.ok(
           ApiResponse.success("User profile updated successfully", userResponse));
     } catch (Exception ex) {
@@ -86,10 +86,11 @@ public class UserController {
       }
 
       UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-      String username = userDetails.getUsername();
-      log.info("Deleting account for user: {}", username);
+      Long userId = Long.valueOf(userDetails.getUsername());
 
-      userService.deleteCurrentUser(username);
+      log.info("Deleting account for user ID: {}", userId);
+
+      userService.deleteCurrentUser(userId);
       return ResponseEntity.ok(ApiResponse.success("User account deleted successfully", null));
     } catch (Exception ex) {
       log.error("Failed to delete user account: ", ex);

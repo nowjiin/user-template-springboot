@@ -40,19 +40,6 @@ public class AdminServiceImpl implements AdminService {
 
   @Override
   @Transactional(readOnly = true)
-  public PageResponse<UserResponse> searchUsers(String keyword, Pageable pageable) {
-    log.info("Admin: Searching users with keyword: {}", keyword);
-    Page<User> userPage =
-        userRepository.findByUsernameContainingOrEmailContaining(keyword, pageable);
-    List<UserResponse> userResponses =
-        userPage.getContent().stream().map(UserResponse::from).toList();
-
-    return PageResponse.of(
-        userResponses, userPage.getNumber(), userPage.getSize(), userPage.getTotalElements());
-  }
-
-  @Override
-  @Transactional(readOnly = true)
   public UserResponse getUserById(Long id) {
     log.info("Admin: Getting user by ID: {}", id);
     User user =
@@ -108,39 +95,5 @@ public class AdminServiceImpl implements AdminService {
 
     userRepository.delete(user);
     log.info("Admin: User deleted successfully: {}", id);
-  }
-
-  @Override
-  @Transactional
-  public UserResponse enableUser(Long id) {
-    log.info("Admin: Enabling user ID: {}", id);
-
-    User user =
-        userRepository
-            .findById(id)
-            .orElseThrow(() -> new BusinessException("User not found", 404, "USER_NOT_FOUND"));
-
-    user.setEnabled(true);
-    User updatedUser = userRepository.save(user);
-    log.info("Admin: User enabled successfully: {}", id);
-
-    return UserResponse.from(updatedUser);
-  }
-
-  @Override
-  @Transactional
-  public UserResponse disableUser(Long id) {
-    log.info("Admin: Disabling user ID: {}", id);
-
-    User user =
-        userRepository
-            .findById(id)
-            .orElseThrow(() -> new BusinessException("User not found", 404, "USER_NOT_FOUND"));
-
-    user.setEnabled(false);
-    User updatedUser = userRepository.save(user);
-    log.info("Admin: User disabled successfully: {}", id);
-
-    return UserResponse.from(updatedUser);
   }
 }

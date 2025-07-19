@@ -1,16 +1,11 @@
 package com.example.usertemplate.user.service;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import com.example.usertemplate.global.common.PageResponse;
 import com.example.usertemplate.global.exception.BusinessException;
-import com.example.usertemplate.user.dto.UserCreateRequest;
 import com.example.usertemplate.user.dto.UserResponse;
 import com.example.usertemplate.user.dto.UserUpdateRequest;
 import com.example.usertemplate.user.entity.User;
@@ -26,32 +21,7 @@ public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
-
-  @Override
-  @Transactional
-  public UserResponse createUser(UserCreateRequest request) {
-    log.info("Creating user with username: {}", request.username());
-
-    if (userRepository.existsByUsername(request.username())) {
-      throw new BusinessException("Username already exists", 409, "DUPLICATE_USERNAME");
-    }
-
-    if (userRepository.existsByEmail(request.email())) {
-      throw new BusinessException("Email already exists", 409, "DUPLICATE_EMAIL");
-    }
-
-    User user =
-        User.builder()
-            .username(request.username())
-            .email(request.email())
-            .password(passwordEncoder.encode(request.password()))
-            .build();
-
-    User savedUser = userRepository.save(user);
-    log.info("User created successfully with ID: {}", savedUser.getId());
-
-    return UserResponse.from(savedUser);
-  }
+  private final TransactionTemplate transactionTemplate;
 
   @Override
   @Transactional(readOnly = true)
@@ -64,95 +34,53 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional(readOnly = true)
-  public UserResponse getUserByUsername(String username) {
-    User user =
-        userRepository
-            .findByUsername(username)
-            .orElseThrow(() -> new BusinessException("User not found", 404, "USER_NOT_FOUND"));
-    return UserResponse.from(user);
+  public UserResponse updateCurrentUser(Long userId, UserUpdateRequest request) {
+    // 🔧 Service 책임: 비즈니스 로직 검증
+    if (userId == null) {
+      throw new IllegalArgumentException("User ID cannot be null");
+    }
+    if (request == null) {
+      throw new IllegalArgumentException("Update request cannot be null");
+    }
+
+    return transactionTemplate.execute(
+        status -> {
+          log.info("🎯 Optimized user self-updating profile: User ID: {}", userId);
+
+          // 🎯 최적화: ID로 사용자 조회 후 업데이트
+          User user =
+              userRepository
+                  .findById(userId)
+                  .orElseThrow(
+                      () -> new BusinessException("User not found", 404, "USER_NOT_FOUND"));
+
+          if (request.password() != null) {
+            user.setPassword(passwordEncoder.encode(request.password()));
+          }
+
+          // 변경사항이 있을 때만 저장
+          User updatedUser = userRepository.save(user);
+
+          log.info(
+              "🎯 Optimized user self-updated profile successfully: User ID: {}",
+              updatedUser.getId());
+
+          return UserResponse.from(updatedUser);
+        });
   }
 
   @Override
   @Transactional
-  public UserResponse updateCurrentUser(String username, UserUpdateRequest request) {
-    log.info("Updating user: {}", username);
+  public void deleteCurrentUser(Long userId) {
+    log.info("Deleting user: {}", userId);
 
     User user =
         userRepository
-            .findByUsername(username)
-            .orElseThrow(() -> new BusinessException("User not found", 404, "USER_NOT_FOUND"));
-
-    if (request.username() != null && !request.username().equals(user.getUsername())) {
-      if (userRepository.existsByUsername(request.username())) {
-        throw new BusinessException("Username already exists", 409, "DUPLICATE_USERNAME");
-      }
-      user.setUsername(request.username());
-    }
-
-    if (request.email() != null && !request.email().equals(user.getEmail())) {
-      if (userRepository.existsByEmail(request.email())) {
-        throw new BusinessException("Email already exists", 409, "DUPLICATE_EMAIL");
-      }
-      user.setEmail(request.email());
-    }
-
-    if (request.password() != null) {
-      user.setPassword(passwordEncoder.encode(request.password()));
-    }
-
-    User updatedUser = userRepository.save(user);
-    log.info("User updated successfully: {}", username);
-
-    return UserResponse.from(updatedUser);
-  }
-
-  @Override
-  @Transactional
-  public void deleteCurrentUser(String username) {
-    log.info("Deleting user: {}", username);
-
-    User user =
-        userRepository
-            .findByUsername(username)
+            .findById(userId)
             .orElseThrow(() -> new BusinessException("User not found", 404, "USER_NOT_FOUND"));
 
     userRepository.delete(user);
-    log.info("User deleted successfully: {}", username);
-  }
 
-  @Override
-  @Transactional(readOnly = true)
-  public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
-    Page<User> userPage = userRepository.findAll(pageable);
-    List<UserResponse> userResponses =
-        userPage.getContent().stream().map(UserResponse::from).toList();
-
-    return PageResponse.of(
-        userResponses, userPage.getNumber(), userPage.getSize(), userPage.getTotalElements());
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public PageResponse<UserResponse> searchUsers(String keyword, Pageable pageable) {
-    Page<User> userPage =
-        userRepository.findByUsernameContainingOrEmailContaining(keyword, pageable);
-    List<UserResponse> userResponses =
-        userPage.getContent().stream().map(UserResponse::from).toList();
-
-    return PageResponse.of(
-        userResponses, userPage.getNumber(), userPage.getSize(), userPage.getTotalElements());
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public boolean existsByUsername(String username) {
-    return userRepository.existsByUsername(username);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public boolean existsByEmail(String email) {
-    return userRepository.existsByEmail(email);
+    log.info("User deleted successfully: {}", userId);
   }
 }

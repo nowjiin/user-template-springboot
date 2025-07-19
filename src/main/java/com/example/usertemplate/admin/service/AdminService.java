@@ -10,15 +10,9 @@ public interface AdminService {
 
   PageResponse<UserResponse> getAllUsers(Pageable pageable);
 
-  PageResponse<UserResponse> searchUsers(String keyword, Pageable pageable);
-
   UserResponse getUserById(Long id);
 
   UserResponse updateUser(Long id, UserUpdateRequest request);
 
   void deleteUser(Long id);
-
-  UserResponse enableUser(Long id);
-
-  UserResponse disableUser(Long id);
 }

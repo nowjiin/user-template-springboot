@@ -13,20 +13,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.example.usertemplate.global.common.ApiResponse;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-  public static ResponseEntity<ApiResponse<?>> errorResponseEntity(
-      String message, HttpStatus status) {
-    ApiResponse<?> response =
-        new ApiResponse<>("ERROR", message, null, java.time.LocalDateTime.now());
-    return new ResponseEntity<>(response, status);
-  }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {

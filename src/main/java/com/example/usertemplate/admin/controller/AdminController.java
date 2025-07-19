@@ -56,31 +56,6 @@ public class AdminController {
     }
   }
 
-  @GetMapping("/users/search")
-  @Operation(summary = "Search users", description = "Search users by username or email")
-  public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> searchUsers(
-      @RequestParam String keyword,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size,
-      @RequestParam(defaultValue = "id") String sortBy,
-      @RequestParam(defaultValue = "asc") String sortDir) {
-    try {
-      log.info("Admin: Searching users with keyword: {}", keyword);
-
-      Sort sort =
-          sortDir.equalsIgnoreCase("desc")
-              ? Sort.by(sortBy).descending()
-              : Sort.by(sortBy).ascending();
-      Pageable pageable = PageRequest.of(page, size, sort);
-
-      PageResponse<UserResponse> users = adminService.searchUsers(keyword, pageable);
-      return ResponseEntity.ok(ApiResponse.success("Users found successfully", users));
-    } catch (Exception ex) {
-      log.error("Admin: Failed to search users: ", ex);
-      throw ex;
-    }
-  }
-
   @GetMapping("/users/{id}")
   @Operation(summary = "Get user by ID", description = "Get a specific user by their ID")
   public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
@@ -117,32 +92,6 @@ public class AdminController {
       return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
     } catch (Exception ex) {
       log.error("Admin: Failed to delete user: ", ex);
-      throw ex;
-    }
-  }
-
-  @PostMapping("/users/{id}/enable")
-  @Operation(summary = "Enable user", description = "Enable a user account")
-  public ResponseEntity<ApiResponse<UserResponse>> enableUser(@PathVariable Long id) {
-    try {
-      log.info("Admin: Enabling user ID: {}", id);
-      UserResponse user = adminService.enableUser(id);
-      return ResponseEntity.ok(ApiResponse.success("User enabled successfully", user));
-    } catch (Exception ex) {
-      log.error("Admin: Failed to enable user: ", ex);
-      throw ex;
-    }
-  }
-
-  @PostMapping("/users/{id}/disable")
-  @Operation(summary = "Disable user", description = "Disable a user account")
-  public ResponseEntity<ApiResponse<UserResponse>> disableUser(@PathVariable Long id) {
-    try {
-      log.info("Admin: Disabling user ID: {}", id);
-      UserResponse user = adminService.disableUser(id);
-      return ResponseEntity.ok(ApiResponse.success("User disabled successfully", user));
-    } catch (Exception ex) {
-      log.error("Admin: Failed to disable user: ", ex);
       throw ex;
     }
   }

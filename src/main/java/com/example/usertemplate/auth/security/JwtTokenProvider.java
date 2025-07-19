@@ -34,29 +34,26 @@ public class JwtTokenProvider {
     UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
     Date expiryDate = new Date(System.currentTimeMillis() + jwtExpiration);
 
+    // Extract user ID from UserDetails (assuming it's stored in username field)
+    String userId = userPrincipal.getUsername();
+
     return Jwts.builder()
-        .subject(userPrincipal.getUsername())
+        .subject(userId)
         .issuedAt(new Date())
         .expiration(expiryDate)
         .signWith(key)
         .compact();
   }
 
-  public String generateRefreshToken(String username) {
+  public String generateRefreshToken(String userId) {
     Date expiryDate = new Date(System.currentTimeMillis() + refreshExpiration);
 
     return Jwts.builder()
-        .subject(username)
+        .subject(userId)
         .issuedAt(new Date())
         .expiration(expiryDate)
         .signWith(key)
         .compact();
-  }
-
-  public String getUsernameFromToken(String token) {
-    Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-
-    return claims.getSubject();
   }
 
   public boolean validateToken(String token) {
@@ -71,7 +68,17 @@ public class JwtTokenProvider {
     return false;
   }
 
-  public long getExpirationTime() {
-    return jwtExpiration;
+  public String getUserIdFromToken(String token) {
+    Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+    return claims.getSubject(); // User ID
+  }
+
+  public Long getUserIdAsLongFromToken(String token) {
+    String userIdStr = getUserIdFromToken(token);
+    try {
+      return Long.parseLong(userIdStr);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid user ID in token: " + userIdStr, e);
+    }
   }
 }

@@ -53,7 +53,6 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     public String result;
     public String message;
     public String errorCode;
-    public Object details = null;
     public LocalDateTime timestamp;
 
     public static ErrorResponseBuilder builder() {
